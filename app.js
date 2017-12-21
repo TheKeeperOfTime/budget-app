@@ -1,14 +1,57 @@
 // Budget Controller
 const budgetController = (function() {
 
+    const Expense = function(id, description, value) {
+        this.id = id;
+        this.description = description;
+        this.value = value;
+    };
 
+    const Income = function(id, description, value) {
+        this.id = id;
+        this.description = description;
+        this.value = value;
+    };
+
+    const data = {
+        allItems: {
+            exp: [],
+            inc: []
+        },
+        totals: {
+            exp: 0,
+            inc: 0
+        }
+    };
+
+    return {
+        addItem: function(type, des, val) {
+            let newItem;
+
+            // Create New ID
+            ID = data.allItems[type][data.allItems[type].length - 1].id + 1;
+
+            // Create new item based on type
+            if ( type === 'exp') {
+                newItem = new Expense(ID, des, val);
+            } else if (type === 'inc') {
+                newItem = new Income(ID, des, val);
+            }
+
+            // Push it to Data Structure
+            data.allItems[type].push(newItem);
+
+            // Return The New Element
+            return newItem;
+        }
+    }
 
 })();
 
 // UI Controller
 const UIController = (function() {
 
-    const DOMstrings = {
+    const DOMStrings = {
         inputType: '.add__type',
         inputDescription: '.add__description',
         inputValue: '.add__value',
@@ -18,14 +61,14 @@ const UIController = (function() {
     return {
         getInput: function() {
             return {
-                type: document.querySelector(DOMstrings.inputType).value, // Will be either income or expense
-                description: document.querySelector(DOMstrings.inputDescription).value,
-                value: document.querySelector(DOMstrings.inputValue).value
+                type: document.querySelector(DOMStrings.inputType).value, // Will be either inc or exp
+                description: document.querySelector(DOMStrings.inputDescription).value,
+                value: document.querySelector(DOMStrings.inputValue).value
             };
         },
 
-        getDOMstrings: function() {
-            return DOMstrings;
+        getDOMStrings: function() {
+            return DOMStrings;
         }
     };
 
@@ -34,13 +77,26 @@ const UIController = (function() {
 //Global App Controller
 const controller = (function(budgetCtrl, UICtrl) {
 
-    const DOM = UICtrl.getDOMstrings();
+    const setupEventListeners = function() {
+        const DOM = UICtrl.getDOMStrings();
+        document.querySelector(DOM.inputBtn).addEventListener('click', ctrlAddItem);
+
+        document.addEventListener('keypress', function(event) {
+
+            if(event.keyCode === 13 || event.which === 13) {
+                ctrlAddItem();
+            }
+        });
+    };
 
     const ctrlAddItem = function() {
+        let newItem;
+
         // 1. Get the field input data
         const input = UICtrl.getInput();
 
         // 2. Add the item to the budget controller
+        newItem = budgetCtrl.addItem(input.type, input.description, input.value);
 
         // 3. Add the new item to the UI
 
@@ -49,13 +105,13 @@ const controller = (function(budgetCtrl, UICtrl) {
         // 5. Display the budget on UI
     };
 
-    document.querySelector(DOM.inputBtn).addEventListener('click', ctrlAddItem);
-
-    document.addEventListener('keypress', function(event) {
-
-        if(event.keyCode === 13 || event.which === 13) {
-            ctrlAddItem();
+    return {
+        init: function() {
+            console.log('Application has started');
+            setupEventListeners();
         }
-    });
+    }
 
 })(budgetController, UIController);
+
+controller.init();
